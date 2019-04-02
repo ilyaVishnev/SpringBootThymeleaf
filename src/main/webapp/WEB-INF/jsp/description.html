@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:form="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Описание</title>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+</head>
+<body>
+<table>
+    <tr>
+        <td>Описание</td>
+        <td>Корпус</td>
+        <td>Коробка скоростей</td>
+        <td>Мотор</td>
+        <td>Статус</td>
+        <td>Фото</td>
+    </tr>
+    <tr th:object="${car}">
+        <form name="descForm" th:action="@{/status}" th:method="POST">
+            <td th:text="*{description}"></td>
+            <td th:text="*{carBody.description}"></td>
+            <td th:text="*{gearbox.description}"></td>
+            <td th:text="*{engine.description}"></td>
+            <td>
+                <select onchange="document.forms['descForm'].submit()" class="form-control" id="selectedStatus">
+                </select>
+            </td>
+            <td><img th:src="${car.photo}"></td>
+            <input type="hidden" th:value="${car.id}" name="id"/>
+        </form>
+    </tr>
+</table>
+<script th:inline="javascript">
+    var option;
+    if ([[${car.holder.id}]] == [[${session.user.id}]] || [[${session.admin}]]) {
+        if ([[${car.status}]]) {
+            option = "<option value=\"true\">Не продано</option>\n<option value=\"false\">Продано</option>";
+        } else {
+            option = "<option value=\"false\">Продано</option>\n<option value=\"true\">Не продано</option>";
+        }
+    } else {
+        if ([[${car.status}]]) {
+            option = "<option value=\"true\">Не продано</option>";
+        } else {
+            option = "<option value=\"false\">Продано</option>";
+        }
+    }
+    $('#selectedStatus').html(option);
+</script>
+</body>
+</html>

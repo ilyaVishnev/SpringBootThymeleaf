@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html  xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>sign</title>
+</head>
+<body>
+<div class="error" th:if ="${error!=null}" >[[${error}]]</div>
+
+<form th:action="@{/sign}" method="post" class="form-horizontal">
+    Login : <input type="text" name="username"></br>
+    Password : <input type="password" name="password"></br>
+    <input type="submit" name="submit" value="Вход">
+    <input type="hidden" name="${_csrf.parameterName}"
+           value="${_csrf.token}"/>
+</form>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>List of cars</title>
+</head>
+<body>
+<form th:action="@{/logout}" method="post" id="logoutForm">
+    <input type="hidden" name="${_csrf.parameterName}"
+           value="${_csrf.token}"/>
+</form>
+<div th:if="${msg!=null}">
+    <div class="msg">[[${msg}]]</div>
+</div>
+
+<div th:if="${#request.userPrincipal} != null">
+    <h2>
+        User : [[${#request.userPrincipal.name}]] | <a
+            href="javascript:formSubmit()"> Logout</a>
+    </h2>
+</div>
+
+<div style="float: left; margin-top: 200px;margin-right: 10px">
+    <form th:action="@{/}" method="GET">
+        <input type="checkbox" name="photo" id="photo" onchange="submit()" th:checked="${photo}">only photo<br>
+        <input type="checkbox" name="today" id="today" onchange="submit()" th:checked="${today}">only today<br>
+        <select id="brands" name="brands" onchange="submit()">
+            <option th:value="off">Выберите бренд</option>
+            <option th:each="brand : ${brands}" th:value="${brand.id}" th:text="${brand}"
+                    th:selected="${selbrand==brand.id}"></option>
+        </select>
+    </form>
+</div>
+<table>
+    <tr>
+        <td>Модель</td>
+        <td>Цена</td>
+        <td>Статус</td>
+        <td>Фото</td>
+    </tr>
+    <tr th:each="car : ${cars}">
+        <form th:action="@{/desc}" th:method="GET">
+            <td th:text="${car.gearbox.model.name}"></td>
+            <td th:text="${car.price}"></td>
+            <td th:text="${car.status}"></td>
+            <td><input type="image" th:src="${car.photo}"></td>
+            <input type="hidden" th:value="${car.id}" name="carId"/>
+        </form>
+    </tr>
+</table>
+</br>
+<form th:action="@{/create}" method="get">
+    <p><input type="submit" value="Добавить авто" name="add" class="btn btn-default"></p>
+</form>
+<script>
+    function formSubmit() {
+        document.getElementById("logoutForm").submit();
+    }
+</script>
+</body>
+</html>

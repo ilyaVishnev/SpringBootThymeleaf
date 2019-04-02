@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+<p>Введите марку авто : <select id="brand" name="brand" onchange="changeSelect()">
+    <option th:value="off">Выберите марку</option>
+    <option th:each="brand : ${brands}" th:value="${brand.id}" th:text="${brand}"></option>
+</select></p>
+<meta name="_csrf" th:content="${_csrf.token}"/>
+<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+<p>Введите модель авто : <select id="model" name="model" onchange="changeSelect()">
+</select></p>
+<form name="createForm" id="createForm" th:action="@{/create}" method="post">
+    <p>Выберите год производства : <select id="year" name="year" onchange="changeSelect()">
+    </select></p>
+    <p>Коробка скоростей : <select id="gearbox" name="gearbox">
+    </select></p>
+    <p>Выберите корпус : <select id="carBody" name="carBody">
+    </select></p>
+    <p>Выберите мотор : <select id="engine" name="engine">
+    </select></p>
+    <p>Введите описание : <textarea name="description"></textarea></p>
+    <p>Введите цену : <input type="text" name="price"></p>
+    <p>Выберите статус : <select id="status" name="status">
+        <option value="true">Не продано</option>
+        <option value="false">Продано</option>
+    </select></p>
+    <div style="background-color: antiquewhite" th:if="${error}!=null">
+        <th:textarea value="${error}"></th:textarea>
+    </div>
+    <br/>
+    <p><img id="image" src="pictures/emptyPhoto.JPG" width="15%" height="15%"></p>
+    <input type="hidden" id="myimage" name="photo" class="image" value="null">
+
+    <input type="submit" value="Добавить объявление">
+</form>
+<br/>
+<h3> Выберите изображение: </h3>
+<form th:action="@{/image}" id="formIm" method="post" name="formIm"
+      enctype="multipart/form-data">
+    <input type="file" name="uploadFile" id="uploadFile">
+    <br/>
+    <input type="button" value="Отправить изображение" onclick="submit()">
+</form>
+<br/>
+<a th:href="@{/list}">Go to List</a>
+<script>
+    var token = $("meta[name='_csrf']").attr("content");
+    var header = $("meta[name='_csrf_header']").attr("content");
+
+    var brand = document.getElementById('brand');
+    var model = document.getElementById('model');
+    var year = document.getElementById('year');
+    $('#model').html('<option value="off" disabled selected >Выберите модель</option>');
+    $('#gearbox').html('<option value="off" disabled selected >Выберите коробку скоростей</option>');
+    $('#engine').html('<option value="off" disabled selected >Выберите мотор</option>');
+    $('#carBody').html('<option value="off" disabled selected >Выберите корпус</option>');
+    $('#year').html('<option value="off" disabled selected >Выберите год</option>');
+
+    $(document).ready(function () {
+        var token = $("meta[name='_csrf']").attr("content");
+        var header = $("meta[name='_csrf_header']").attr("content");
+        $.ajax({
+            url: '/image',
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                $('#image').each(function () {
+                    $(this).attr('src', data.image);
+                })
+                $('#myimage').each(function () {
+                    this.value = data.image;
+                })
+            }
+        })
+
+    })
+
+    function changeSelect() {
+        var selectedvalues = {
+            selbrand: brand.options[brand.selectedIndex].value,
+            selmodel: model.options[model.selectedIndex].value,
+            selyear: year.options[year.selectedIndex].value
+        };
+        $.ajax({
+            method: 'post',
+            dataType: 'json',
+            url: '/cars',
+            data: JSON.stringify(selectedvalues),
+            contentType: 'application/json; charset=utf-8',
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader(header, token);
+            },
+            success: function (data) {
+                var models = data.models;
+                var years = data.years;
+                var gearboxes = data.gearboxes;
+                var carBodies = data.carBodies;
+                var engines = data.engines;
+                var content = '<option value="off" disabled selected>Выберите модель</option>';
+                if (models != null) {
+                    models.forEach(function (newModel, index, models) {
+                        content += '<option value="' + newModel.id + '">' + newModel.name + '</option>';
+                    });
+                    $('#model').empty().html(content);
+                }
+                content = '<option value="off" disabled selected>Выберите коробку скоростей</option>';
+                if (gearboxes != null) {
+                    gearboxes.forEach(function (newGearbox, index, gearboxes) {
+                        content += '<option value="' + newGearbox.id + '">' + newGearbox.description + '</option>';
+                    });
+                    $('#gearbox').empty().html(content);
+                }
+                content = '<option value="off" disabled selected>Выберите мотор</option>';
+                if (engines != null) {
+                    engines.forEach(function (newEngines, index, engines) {
+                        content += '<option value="' + newEngines.id + '">' + newEngines.description + '</option>';
+                    });
+                    $('#engine').empty().html(content);
+                }
+                content = '<option value="off" disabled selected>Выберите корпус</option>';
+                if (carBodies != null) {
+                    carBodies.forEach(function (newCarBody, index, carBodies) {
+                        content += '<option value="' + newCarBody.id + '">' + newCarBody.description + '</option>';
+                    });
+                    $('#carBody').empty().html(content);
+                }
+                content = '<option value="off" disabled selected>Выберите год</option>';
+                if (years != null) {
+                    years.forEach(function (newYear, index, years) {
+                        content += newYear.id == year.options[year.selectedIndex].value ? '<option value="' + newYear.id + ' selected ">'
+                            + newYear.year + '</option>' : '<option value="' + newYear.id + '">' + newYear.year + '</option>';
+                    });
+                    $('#year').empty().html(content);
+                }
+            },
+            async: false,
+        })
+    }
+
+    function checkEmptyPlaces() {
+        var data = {
+            empty: false
+        };
+        var elem = $("#createForm").find('input:not(input.image), select').each(
+            function () {
+                if ($(this).val() == '' || $(this).val() == null) {
+                    data.empty = true;
+                }
+            }
+        );
+        if (data.empty) {
+            alert("some of the fields are empty");
+            return false;
+        }
+        return true;
+    }
+</script>
+</body>
+</html>
